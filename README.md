@@ -14,7 +14,7 @@
 
 ## What this is
 
-Steamling is made of two kinds of packages. Around 1,100 come from Arch Linux ARM, frozen in
+Steamling is made of two kinds of packages. Around 900 come from Arch Linux ARM, frozen in
 [Steamling/base](https://github.com/Steamling/base). The rest Steamling builds itself from the
 [main repo](https://github.com/Steamling/steamling): its own kernel, Mesa and gamescope tuned for
 each chip, the Steam session, Governor, the emulators and the small tools that tie it together.
@@ -31,6 +31,7 @@ The repo has no code, only releases, one per pacman repo:
 | `sm8550` | `[steamling]` | packages built for the Snapdragon 8 Gen 2 handhelds (the Retroid Pocket 6 and others) |
 | `sm8250`, `sm8650`, `sm8750` | `[steamling]` | the same for the other chip families, as they get published |
 | `shared` | `[steamling-shared]` | packages that are the same on every handheld |
+| `sources` | (none) | copies of the old Arch Linux packages a few of ours are built from, which otherwise only the Arch Linux Archive keeps. The build reads these, not handhelds |
 
 Each family gets its own release because the kernel, Mesa, gamescope and a few others are built
 differently for each chip under the same package name. Every package comes with a signature, and
@@ -39,8 +40,9 @@ each release also holds its database and the public key the packages are signed 
 
 ## Using it
 
-A Steamling image already has this set up, and a handheld flashed before the repo existed adds it
-by itself after one update from your PC. For reference, the sections in `/etc/pacman.conf` look
+A Steamling image already has this set up. A handheld set up before the repo existed needs
+[switching over once](https://github.com/Steamling/steamling/blob/main/docs/building/updating-from-your-pc.md#switching-an-older-handheld-to-the-package-repo).
+For reference, the sections in `/etc/pacman.conf` look
 like this on a Retroid Pocket 6:
 
 ```ini
@@ -69,15 +71,16 @@ is different; the signature covers the contents.
 
 ## How packages get here
 
-New versions are built on the build machine, then staged and published from the main repo:
+New versions are built on the build machine and published from the main repo, usually in one
+go:
 
 ```bash
-make stage PKG="mesa gamescope"
-make publish
+./build.sh --update --publish
 ```
 
-Staging starts from what's live, swaps in only the packages named and checks that the result can
-be installed on every handheld before anything goes up.
+That publishes every package the build has newer than what's here. Behind it, staging starts from
+what's live, swaps in only the changed packages and checks that the result can be installed on
+every handheld before anything goes up.
 [docs/building/publishing.md](https://github.com/Steamling/steamling/blob/main/docs/building/publishing.md)
 has the whole routine.
 
